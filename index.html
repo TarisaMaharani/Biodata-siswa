@@ -41,9 +41,8 @@
   </div>
 
   <script>
-    // Menggunakan kunci publik standar Supabase REST API
     const SUPABASE_URL = "https://tchfltkkliadtobzcvhb.supabase.co/rest/v1/siswa?select=*";
-    const SUPABASE_KEY = "Sb_publishable_qsphmMKg2RStlOeNKL2ztw_Ize_T-3r";
+    const SUPABASE_KEY = "sb_publishable_qsphmMKg2RStlOeNKL2ztw_Ize_T-3r";
     let dataSiswa = [];
 
     async function ambilDataSiswa() {
@@ -52,8 +51,7 @@
           method: "GET",
           headers: {
             "apikey": SUPABASE_KEY,
-            "Authorization": "Bearer " + SUPABASE_KEY,
-            "Content-Type": "application/json"
+            "Authorization": "Bearer " + SUPABASE_KEY
           }
         });
 
@@ -89,7 +87,6 @@
       `).join('');
     }
 
-    // Fitur Filter & Pencarian Interaktif
     function filterDanCari() {
       const keyword = document.getElementById('pencarian').value.toLowerCase();
       const kelasPilihan = document.getElementById('filterKelas').value;
@@ -106,10 +103,9 @@
     document.getElementById('pencarian').addEventListener('input', filterDanCari);
     document.getElementById('filterKelas').addEventListener('change', filterDanCari);
 
-    // Jalankan fungsi saat halaman dibuka
     ambilDataSiswa();
   </script>
 </body>
 </html>
- 
+
 
