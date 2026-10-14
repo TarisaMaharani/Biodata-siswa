@@ -24,7 +24,6 @@
     .info p { margin-bottom: 0.4rem; }
     .pesan { grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--teks-redup); }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="container">
@@ -37,20 +36,30 @@
     <div id="daftarSiswa" class="grid"><div class="pesan">Memuat data...</div></div>
   </div>
   <script>
-    const sb = supabase.createClient("https://tchfltkkliadtobzcvhb.supabase.co", "Sb_publishable_qsphmMKg2RStlOeNKL2ztw_Ize_T-3r");
+    const URL_SUPABASE = "https://tchfltkkliadtobzcvhb.supabase.co/rest/v1/siswa?select=*&order=nama.asc";
+    const KEY_SUPABASE = "Sb_publishable_qsphmMKg2RStlOeNKL2ztw_Ize_T-3r";
     let dataSiswa = [];
 
-    async function ambil() {
-      const { data, error } = await sb.from('siswa').select('*').order('nama');
-      if (error) { document.getElementById('daftarSiswa').innerHTML = '<div class="pesan">Gagal memuat data.</div>'; return; }
-      dataSiswa = data;
-      isiFilter();
-      tampil(dataSiswa);
+    async function ambilData() {
+      try {
+        const res = await fetch(URL_SUPABASE, {
+          headers: {
+            "apikey": KEY_SUPABASE,
+            "Authorization": "Bearer " + KEY_SUPABASE
+          }
+        });
+        if (!res.ok) throw new Error("Gagal");
+        dataSiswa = await res.json();
+        isiFilter();
+        tampil(dataSiswa);
+      } catch (err) {
+        document.getElementById('daftarSiswa').innerHTML = '<div class="pesan">Gagal memuat data dari Supabase.</div>';
+      }
     }
 
     function tampil(list) {
       const el = document.getElementById('daftarSiswa');
-      if (!list.length) { el.innerHTML = '<div class="pesan">Tidak ada data siswa.</div>'; return; }
+      if (!list || !list.length) { el.innerHTML = '<div class="pesan">Tidak ada data siswa.</div>'; return; }
       el.innerHTML = list.map(s => `
         <div class="card">
           <div class="avatar">${s.nama ? s.nama.split(' ').map(n=>n[0]).join('').substring(0,3).toUpperCase() : '?'}</div>
@@ -84,8 +93,9 @@
       tampil(dataSiswa.filter(s => (!q || s.nama?.toLowerCase().includes(q) || s.nis?.toString().includes(q)) && (!kls || s.kelas === kls)));
     });
 
-    ambil();
+    ambilData();
   </script>
 </body>
 </html>
+
 
