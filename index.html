@@ -4,27 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Biodata Siswa</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap">
   <style>
-    :root { --bg: #eef2f7; --kartu: #ffffff; --teks: #14213d; --teks-redup: #5b667a; --garis: #d6dde8; --aksen: #1d4ed8; }
-    @media (prefers-color-scheme: dark) { :root { --bg: #0e1522; --kartu: #172133; --teks: #e2e8f0; --teks-redup: #94a3b8; --garis: #2a364f; --aksen: #3b82f6; } }
+    :root { --bg: #eef2f7; --kartu: #fff; --teks: #14213d; --teks-redup: #5b667a; --garis: #d6dde8; --aksen: #1d4ed8; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--teks); line-height: 1.5; padding: 2rem 1rem; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--teks); padding: 2rem 1rem; }
     .container { max-width: 1000px; margin: 0 auto; }
-    header { margin-bottom: 2rem; }
-    h1 { font-size: 2rem; font-weight: 800; color: var(--teks); }
-    p.sub { color: var(--teks-redup); margin-top: 0.25rem; }
+    h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .sub { color: var(--teks-redup); margin-bottom: 2rem; }
     .filter-box { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
-    .filter-box input, .filter-box select { padding: 0.75rem 1rem; border: 1px solid var(--garis); border-radius: 8px; background: var(--kartu); color: var(--teks); font-size: 0.95rem; outline: none; }
+    .filter-box input, select { padding: 0.75rem 1rem; border: 1px solid var(--garis); border-radius: 8px; background: var(--kartu); color: var(--teks); font-size: 0.95rem; outline: none; }
     .filter-box input { flex: 1; min-width: 200px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
-    .card { background: var(--kartu); border: 1px solid var(--garis); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; transition: transform 0.2s; }
-    .card:hover { transform: translateY(-4px); }
-    .avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--aksen); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; object-fit: cover; }
+    .card { background: var(--kartu); border: 1px solid var(--garis); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--aksen); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; }
     .card h3 { font-size: 1.15rem; margin-bottom: 0.25rem; }
-    .card .kelas { display: inline-block; background: var(--bg); color: var(--aksen); font-weight: 600; font-size: 0.8rem; padding: 0.25rem 0.75rem; border-radius: 20px; margin-bottom: 1rem; }
+    .kelas { background: var(--bg); color: var(--aksen); font-weight: 600; font-size: 0.8rem; padding: 0.25rem 0.75rem; border-radius: 20px; margin-bottom: 1rem; }
     .info { font-size: 0.85rem; color: var(--teks-redup); text-align: left; width: 100%; }
     .info p { margin-bottom: 0.4rem; }
     .pesan { grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--teks-redup); }
@@ -33,88 +28,64 @@
 </head>
 <body>
   <div class="container">
-    <header><h1>Biodata Siswa</h1><p class="sub">Cari siswa berdasarkan nama atau NIS.</p></header>
+    <h1>Biodata Siswa</h1>
+    <p class="sub">Cari siswa berdasarkan nama atau NIS.</p>
     <div class="filter-box">
       <input type="text" id="pencarian" placeholder="Cari nama atau NIS...">
       <select id="filterKelas"><option value="">Semua kelas</option></select>
     </div>
     <div id="daftarSiswa" class="grid"><div class="pesan">Memuat data...</div></div>
   </div>
-    <script>
-    const SUPABASE_URL = "https://tchfltkkliadtobzcvhb.supabase.co";
-    const SUPABASE_ANON_KEY = "Sb_publishable_qsphmMKg2RStlOeNKL2ztw_Ize_T-3r";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <script>
+    const sb = supabase.createClient("https://tchfltkkliadtobzcvhb.supabase.co", "Sb_publishable_qsphmMKg2RStlOeNKL2ztw_Ize_T-3r");
     let dataSiswa = [];
 
-    async function ambilData() {
-      const { data, error } = await supabase.from('siswa').select('*').order('nama', { ascending: true });
-      if (error) {
-        console.error('Gagal mengambil data:', error);
-        document.getElementById('daftarSiswa').innerHTML = '<div class="pesan">Gagal memuat data dari database.</div>';
-        return;
-      }
+    async function ambil() {
+      const { data, error } = await sb.from('siswa').select('*').order('nama');
+      if (error) { document.getElementById('daftarSiswa').innerHTML = '<div class="pesan">Gagal memuat data.</div>'; return; }
       dataSiswa = data;
-      isiFilterKelas();
-      tampilkanSiswa(dataSiswa);
+      isiFilter();
+      tampil(dataSiswa);
     }
 
-    function ambilInisial(nama) {
-      if (!nama) return '?';
-      return nama.split(' ').map(n => n[0]).join('').substring(0, 3).toUpperCase();
-    }
-
-    function formatTanggal(tglStr) {
-      if (!tglStr) return '-';
-      const tgl = new Date(tglStr);
-      return tgl.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    }
-
-    function tampilkanSiswa(list) {
+    function tampil(list) {
       const el = document.getElementById('daftarSiswa');
-      if (list.length === 0) {
-        el.innerHTML = '<div class="pesan">Tidak ada data siswa yang cocok.</div>';
-        return;
-      }
-      el.innerHTML = list.map(s => {
-        const fotoHtml = s.foto_url 
-          ? `<img src="${s.foto_url}" class="avatar" alt="${s.nama}">`
-          : `<div class="avatar">${ambilInisial(s.nama)}</div>`;
-        return `
-          <div class="card">
-            ${fotoHtml}
-            <h3>${s.nama}</h3>
-            <span class="kelas">${s.kelas || '-'}</span>
-            <div class="info">
-              <p><strong>NIS:</strong> ${s.nis || '-'}</p>
-              <p><strong>Jenis Kelamin:</strong> ${s.jenis_kelamin || '-'}</p>
-              <p><strong>Tanggal Lahir:</strong> ${formatTanggal(s.tanggal_lahir)}</p>
-              <p><strong>Alamat:</strong> ${s.alamat || '-'}</p>
-            </div>
+      if (!list.length) { el.innerHTML = '<div class="pesan">Tidak ada data siswa.</div>'; return; }
+      el.innerHTML = list.map(s => `
+        <div class="card">
+          <div class="avatar">${s.nama ? s.nama.split(' ').map(n=>n[0]).join('').substring(0,3).toUpperCase() : '?'}</div>
+          <h3>${s.nama}</h3>
+          <span class="kelas">${s.kelas || '-'}</span>
+          <div class="info">
+            <p><strong>NIS:</strong> ${s.nis || '-'}</p>
+            <p><strong>Kelamin:</strong> ${s.jenis_kelamin || '-'}</p>
+            <p><strong>Lahir:</strong> ${s.tanggal_lahir || '-'}</p>
+            <p><strong>Alamat:</strong> ${s.alamat || '-'}</p>
           </div>
-        `;
-      }).join('');
+        </div>
+      `).join('');
     }
 
-    function isiFilterKelas() {
-      const select = document.getElementById('filterKelas');
-      const daftarKelas = [...new Set(dataSiswa.map(s => s.kelas).filter(Boolean))].sort();
-      select.innerHTML = '<option value="">Semua kelas</option>' + daftarKelas.map(k => `<option value="${k}">${k}</option>`).join('');
+    function isiFilter() {
+      const sel = document.getElementById('filterKelas');
+      const kelas = [...new Set(dataSiswa.map(s => s.kelas).filter(Boolean))].sort();
+      sel.innerHTML = '<option value="">Semua kelas</option>' + kelas.map(k => `<option value="${k}">${k}</option>`).join('');
     }
 
-    function saringData() {
-      const kataKunci = document.getElementById('pencarian').value.toLowerCase();
-      const kelasPilihan = document.getElementById('filterKelas').value;
-      const hasil = dataSiswa.filter(s => {
-        const cocokNama = (s.nama || '').toLowerCase().includes(kataKunci) || (s.nis || '').toString().includes(kataKunci);
-        const cocokKelas = kelasPilihan === '' || s.kelas === kelasPilihan;
-        return cocokNama && cocokKelas;
-      });
-      tampilkanSiswa(hasil);
-    }
+    document.getElementById('pencarian').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      const kls = document.getElementById('filterKelas').value;
+      tampil(dataSiswa.filter(s => (s.nama?.toLowerCase().includes(q) || s.nis?.toString().includes(q)) && (!kls || s.kelas === kls)));
+    });
 
-    document.getElementById('pencarian').addEventListener('input', saringData);
-    document.getElementById('filterKelas').addEventListener('change', saringData);
-    ambilData();
+    document.getElementById('filterKelas').addEventListener('change', e => {
+      const kls = e.target.value;
+      const q = document.getElementById('pencarian').value.toLowerCase();
+      tampil(dataSiswa.filter(s => (!q || s.nama?.toLowerCase().includes(q) || s.nis?.toString().includes(q)) && (!kls || s.kelas === kls)));
+    });
+
+    ambil();
   </script>
 </body>
 </html>
+
