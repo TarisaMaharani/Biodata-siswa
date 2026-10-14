@@ -16,54 +16,68 @@
     .filter-box input, select { padding: 0.75rem 1rem; border: 1px solid var(--garis); border-radius: 8px; background: var(--kartu); color: var(--teks); font-size: 0.95rem; outline: none; }
     .filter-box input { flex: 1; min-width: 200px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
-    .card { background: var(--kartu); border: 1px solid var(--garis); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .card { background: var(--kartu); border: 1px solid var(--garis); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     .avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--aksen); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; }
     .card h3 { font-size: 1.15rem; margin-bottom: 0.25rem; }
     .kelas { background: var(--bg); color: var(--aksen); font-weight: 600; font-size: 0.8rem; padding: 0.25rem 0.75rem; border-radius: 20px; margin-bottom: 1rem; }
     .info { font-size: 0.85rem; color: var(--teks-redup); text-align: left; width: 100%; }
     .info p { margin-bottom: 0.4rem; }
-    .pesan { grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--teks-redup); }
+    .pesan { grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--teks-redup); font-size: 1.1rem; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Biodata Siswa</h1>
-    <p class="sub">Cari siswa berdasarkan nama atau NIS.</p>
+    <p class="sub">Daftar siswa kelas 11 TJKT 1 dan 11 TJKT 2</p>
     <div class="filter-box">
       <input type="text" id="pencarian" placeholder="Cari nama atau NIS...">
-      <select id="filterKelas"><option value="">Semua kelas</option></select>
+      <select id="filterKelas">
+        <option value="">Semua kelas</option>
+        <option value="11 TJKT 1">11 TJKT 1</option>
+        <option value="11 TJKT 2">11 TJKT 2</option>
+      </select>
     </div>
-    <div id="daftarSiswa" class="grid"><div class="pesan">Memuat data...</div></div>
+    <div id="daftarSiswa" class="grid"><div class="pesan">Sedang memuat data siswa...</div></div>
   </div>
+
   <script>
-    const URL_SUPABASE = "https://tchfltkkliadtobzcvhb.supabase.co/rest/v1/siswa?select=*&order=nama.asc";
-    const KEY_SUPABASE = "Sb_publishable_qsphmMKg2RStlOeNKL2ztw_Ize_T-3r";
+    // Menggunakan kunci publik standar Supabase REST API
+    const SUPABASE_URL = "https://tchfltkkliadtobzcvhb.supabase.co/rest/v1/siswa?select=*";
+    const SUPABASE_KEY = "Sb_publishable_qsphmMKg2RStlOeNKL2ztw_Ize_T-3r";
     let dataSiswa = [];
 
-    async function ambilData() {
+    async function ambilDataSiswa() {
       try {
-        const res = await fetch(URL_SUPABASE, {
+        const response = await fetch(SUPABASE_URL, {
+          method: "GET",
           headers: {
-            "apikey": KEY_SUPABASE,
-            "Authorization": "Bearer " + KEY_SUPABASE
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY,
+            "Content-Type": "application/json"
           }
         });
-        if (!res.ok) throw new Error("Gagal");
-        dataSiswa = await res.json();
-        isiFilter();
-        tampil(dataSiswa);
+
+        if (!response.ok) throw new Error("Gagal mengambil data");
+        
+        dataSiswa = await response.json();
+        tampilkanData(dataSiswa);
       } catch (err) {
-        document.getElementById('daftarSiswa').innerHTML = '<div class="pesan">Gagal memuat data dari Supabase.</div>';
+        console.error(err);
+        document.getElementById('daftarSiswa').innerHTML = '<div class="pesan">⚠️ Gagal memuat data dari Supabase. Coba refresh beberapa saat lagi.</div>';
       }
     }
 
-    function tampil(list) {
-      const el = document.getElementById('daftarSiswa');
-      if (!list || !list.length) { el.innerHTML = '<div class="pesan">Tidak ada data siswa.</div>'; return; }
-      el.innerHTML = list.map(s => `
+    function tampilkanData(list) {
+      const kontainer = document.getElementById('daftarSiswa');
+      if (!list || list.length === 0) {
+        kontainer.innerHTML = '<div class="pesan">Tidak ada data siswa yang ditemukan.</div>';
+        return;
+      }
+
+      kontainer.innerHTML = list.map(s => `
         <div class="card">
-          <div class="avatar">${s.nama ? s.nama.split(' ').map(n=>n[0]).join('').substring(0,3).toUpperCase() : '?'}</div>
-          <h3>${s.nama}</h3>
+          <div class="avatar">${s.nama ? s.nama.split(' ').map(n => n[0]).join('').substring(0, 3).toUpperCase() : 'S'}</div>
+          <h3>${s.nama || '-'}</h3>
           <span class="kelas">${s.kelas || '-'}</span>
           <div class="info">
             <p><strong>NIS:</strong> ${s.nis || '-'}</p>
@@ -75,27 +89,27 @@
       `).join('');
     }
 
-    function isiFilter() {
-      const sel = document.getElementById('filterKelas');
-      const kelas = [...new Set(dataSiswa.map(s => s.kelas).filter(Boolean))].sort();
-      sel.innerHTML = '<option value="">Semua kelas</option>' + kelas.map(k => `<option value="${k}">${k}</option>`).join('');
+    // Fitur Filter & Pencarian Interaktif
+    function filterDanCari() {
+      const keyword = document.getElementById('pencarian').value.toLowerCase();
+      const kelasPilihan = document.getElementById('filterKelas').value;
+
+      const hasilFilter = dataSiswa.filter(s => {
+        const cocokNamaNis = (s.nama && s.nama.toLowerCase().includes(keyword)) || (s.nis && s.nis.toString().includes(keyword));
+        const cocokKelas = !kelasPilihan || s.kelas === kelasPilihan;
+        return cocokNamaNis && cocokKelas;
+      });
+
+      tampilkanData(hasilFilter);
     }
 
-    document.getElementById('pencarian').addEventListener('input', e => {
-      const q = e.target.value.toLowerCase();
-      const kls = document.getElementById('filterKelas').value;
-      tampil(dataSiswa.filter(s => (s.nama?.toLowerCase().includes(q) || s.nis?.toString().includes(q)) && (!kls || s.kelas === kls)));
-    });
+    document.getElementById('pencarian').addEventListener('input', filterDanCari);
+    document.getElementById('filterKelas').addEventListener('change', filterDanCari);
 
-    document.getElementById('filterKelas').addEventListener('change', e => {
-      const kls = e.target.value;
-      const q = document.getElementById('pencarian').value.toLowerCase();
-      tampil(dataSiswa.filter(s => (!q || s.nama?.toLowerCase().includes(q) || s.nis?.toString().includes(q)) && (!kls || s.kelas === kls)));
-    });
-
-    ambilData();
+    // Jalankan fungsi saat halaman dibuka
+    ambilDataSiswa();
   </script>
 </body>
 </html>
-
+ 
 
