@@ -134,7 +134,7 @@
     }
     .aksi-kartu button:hover { background: var(--bg); }
 
-    /* Modal Form */
+    /* Modal Umum */
     .modal {
       display: none;
       position: fixed; inset: 0;
@@ -167,6 +167,12 @@
       padding: 8px 12px;
     }
     .modal-aksi { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+    /* Modal Khusus Foto Besar */
+    .modal-konten-foto img {
+      border: 4px solid var(--kartu);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
 
     .pesan {
       grid-column: 1 / -1;
@@ -241,6 +247,14 @@
     </div>
   </div>
 
+  <!-- Modal untuk Memperbesar Foto -->
+  <div class="modal" id="modalFoto">
+    <div class="modal-konten-foto" style="background: transparent; box-shadow: none; max-width: 400px; text-align: center;">
+      <img id="fotoBesar" src="" alt="Foto Perbesar" style="width: 100%; border-radius: 16px; object-fit: contain;">
+      <button type="button" class="btn btn-sekunder" id="tutupModalFoto" style="margin-top: 16px;">Tutup</button>
+    </div>
+  </div>
+
   <!-- Library Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
@@ -263,12 +277,27 @@
     const elCari = document.getElementById("cari");
     const elKelas = document.getElementById("filterKelas");
     
-    // Elemen Modal
+    // Elemen Modal Form
     const modalSiswa = document.getElementById("modalSiswa");
     const modalJudul = document.getElementById("modalJudul");
     const formSiswa = document.getElementById("formSiswa");
     const btnTambah = document.getElementById("btnTambah");
     const btnBatal = document.getElementById("btnBatal");
+
+    // Elemen Modal Foto
+    const modalFoto = document.getElementById("modalFoto");
+    const fotoBesar = document.getElementById("fotoBesar");
+    const tutupModalFoto = document.getElementById("tutupModalFoto");
+
+    tutupModalFoto.onclick = () => {
+      modalFoto.classList.remove("aktif");
+    };
+
+    modalFoto.onclick = (e) => {
+      if (e.target === modalFoto) {
+        modalFoto.classList.remove("aktif");
+      }
+    };
 
     let semuaSiswa = [];
     let statusEdit = false;
@@ -332,6 +361,7 @@
 
       const isi = el("div", "isi");
       const foto = el("div", "foto");
+      
       if (s.foto_url) {
         const gambar = document.createElement("img");
         gambar.src = s.foto_url;
@@ -339,9 +369,18 @@
         gambar.loading = "lazy";
         gambar.onerror = () => foto.replaceChildren(document.createTextNode(inisial(s.nama)));
         foto.appendChild(gambar);
+
+        // --- FITUR KLIK FOTO UNTUK MEMPERBESAR ---
+        foto.style.cursor = "pointer";
+        foto.title = "Klik untuk memperbesar foto";
+        foto.onclick = () => {
+          fotoBesar.src = s.foto_url;
+          modalFoto.classList.add("aktif");
+        };
       } else {
         foto.textContent = inisial(s.nama);
       }
+
       isi.appendChild(foto);
       isi.appendChild(el("h2", "nama", s.nama));
       isi.appendChild(el("p", "nis", "NIS " + s.nis));
@@ -424,7 +463,6 @@
     }
 
     // ---------- LOGIKA CRUD (TAMBAH, EDIT, HAPUS) ----------
-    
     btnTambah.onclick = () => {
       statusEdit = false;
       modalJudul.textContent = "Tambah Siswa";
@@ -443,7 +481,7 @@
       modalJudul.textContent = "Edit Data Siswa";
       document.getElementById("editNisLama").value = s.nis;
       document.getElementById("inputNis").value = s.nis;
-      document.getElementById("inputNis").disabled = true; // NIS sebagai primary key tidak diubah saat edit
+      document.getElementById("inputNis").disabled = true;
       document.getElementById("inputNama").value = s.nama || "";
       document.getElementById("inputKelas").value = s.kelas || "";
       document.getElementById("inputJk").value = s.jenis_kelamin || "Laki-laki";
@@ -467,7 +505,6 @@
       };
 
       if (statusEdit) {
-        // Proses UPDATE
         const nisLama = document.getElementById("editNisLama").value;
         const { error } = await db.from("siswa").update(dataBaru).eq("nis", nisLama);
         if (error) {
@@ -475,7 +512,6 @@
           return;
         }
       } else {
-        // Proses INSERT
         const { error } = await db.from("siswa").insert([dataBaru]);
         if (error) {
           alert("Gagal menambah data: " + error.message);
@@ -504,3 +540,4 @@
   </script>
 </body>
 </html>
+
