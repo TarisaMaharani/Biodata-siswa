@@ -64,9 +64,8 @@
       border: 1px solid var(--garis);
       border-radius: 10px;
       padding: 10px 12px;
+      flex: 1 1 200px;
     }
-    .kontrol input  { flex: 1 1 220px; }
-    .kontrol select { flex: 0 1 160px; }
     .kontrol input:focus-visible, .kontrol select:focus-visible {
       outline: 2px solid var(--aksen);
       outline-offset: 1px;
@@ -188,22 +187,33 @@
   <div class="wadah">
     <header>
       <div>
-        <h1>TEKNIK JARINGAN KOMPUTER</h1>
-        <p>Cari berdasarkan role</p>
+        <h1>Teknik Jaringan Komputer</h1>
+        <p>Data Guru & Siswa</p>
       </div>
       <button class="btn" id="btnTambah">+ Tambah Data Guru/Siswa</button>
     </header>
+    
     <div class="kontrol">
-      <input id="cari" type="search" placeholder="Cari data guru/siswa" aria-label="Cari data">
-      <select id="filterTipe" aria-label="Filter Tipe">
+      <input id="cari" type="search" placeholder="Cari nama, NIS/NIP, atau mapel..." aria-label="Cari data">
+      
+      <!-- Opsi 1: Guru / Siswa -->
+      <select id="filterTipe" aria-label="Filter Guru atau Siswa">
         <option value="">Semua (Guru & Siswa)</option>
         <option value="Siswa">Siswa</option>
         <option value="Guru">Guru</option>
       </select>
-      <select id="filterKelas" aria-label="Filter kelas">
-        <option value="">Semua kelas</option>
+
+      <!-- Opsi 2: Kelas -->
+      <select id="filterKelas" aria-label="Filter Kelas">
+        <option value="">Semua Kelas</option>
+      </select>
+
+      <!-- Opsi 3: Mapel -->
+      <select id="filterMapel" aria-label="Filter Mapel">
+        <option value="">Semua Mapel</option>
       </select>
     </div>
+
     <p id="jumlah" class="jumlah" aria-live="polite"></p>
     <main id="daftar" class="daftar"></main>
   </div>
@@ -211,28 +221,34 @@
   <!-- Modal Form Tambah/Edit -->
   <div class="modal" id="modalData">
     <div class="modal-konten">
-      <h2 id="modalJudul">Tambah Data</h2>
+      <h2 id="modalJudul">Tambah Data Guru / Siswa</h2>
       <form id="formData">
         <input type="hidden" id="editIdLama">
+        
         <div class="form-grup">
-          <label for="inputTipe">Sebagai (Guru / Siswa)</label>
+          <label for="inputTipe">Kategori</label>
           <select id="inputTipe" required>
             <option value="Siswa">Siswa</option>
             <option value="Guru">Guru</option>
           </select>
         </div>
+
         <div class="form-grup">
           <label for="inputNisNip" id="labelNisNip">NIS</label>
           <input type="text" id="inputNisNip" required>
         </div>
+
         <div class="form-grup">
           <label for="inputNama">Nama Lengkap</label>
           <input type="text" id="inputNama" required>
         </div>
-        <div class="form-grup">
-          <label for="inputKelas" id="labelKelasMapel">Kelas</label>
-          <input type="text" id="inputKelas" placeholder="Contoh: 11 TJKT 1 atau Pemrograman Jaringan" required>
+
+        <!-- Field dinamis untuk Kelas (Siswa) atau Mapel (Guru) -->
+        <div class="form-grup" id="grupKelasMapel">
+          <label for="inputKelasMapel" id="labelKelasMapel">Kelas</label>
+          <input type="text" id="inputKelasMapel" placeholder="Contoh: 11 TJKT 1" required>
         </div>
+
         <div class="form-grup" id="grupJk">
           <label for="inputJk">Jenis Kelamin</label>
           <select id="inputJk">
@@ -240,18 +256,22 @@
             <option value="Perempuan">Perempuan</option>
           </select>
         </div>
+
         <div class="form-grup" id="grupTgl">
           <label for="inputTgl">Tanggal Lahir</label>
           <input type="date" id="inputTgl">
         </div>
+
         <div class="form-grup" id="grupAlamat">
           <label for="inputAlamat">Alamat</label>
           <textarea id="inputAlamat" rows="2"></textarea>
         </div>
+
         <div class="form-grup">
           <label for="inputFoto">URL Foto (Opsional)</label>
           <input type="url" id="inputFoto" placeholder="https://...">
         </div>
+
         <div class="modal-aksi">
           <button type="button" class="btn btn-sekunder" id="btnBatal">Batal</button>
           <button type="submit" class="btn" id="btnSimpan">Simpan</button>
@@ -272,20 +292,18 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
   <script>
-    // ---------- LANGKAH 1: PENGATURAN ----------
     const SUPABASE_URL = "https://tchfltkkliadtobzcvhb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_qsphmMKg2RStlOeNKL2ztw_Ize_T-3r";
 
-    // ---------- LANGKAH 2: HUBUNGKAN KE SUPABASE ----------
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const elDaftar = document.getElementById("daftar");
     const elJumlah = document.getElementById("jumlah");
     const elCari = document.getElementById("cari");
     const elFilterTipe = document.getElementById("filterTipe");
-    const elKelas = document.getElementById("filterKelas");
+    const elFilterKelas = document.getElementById("filterKelas");
+    const elFilterMapel = document.getElementById("filterMapel");
     
-    // Elemen Modal Form
     const modalData = document.getElementById("modalData");
     const modalJudul = document.getElementById("modalJudul");
     const formData = document.getElementById("formData");
@@ -293,7 +311,6 @@
     const btnBatal = document.getElementById("btnBatal");
     const inputTipe = document.getElementById("inputTipe");
 
-    // Elemen Modal Foto
     const modalFoto = document.getElementById("modalFoto");
     const fotoBesar = document.getElementById("fotoBesar");
     const tutupModalFoto = document.getElementById("tutupModalFoto");
@@ -304,60 +321,67 @@
     let semuaData = [];
     let statusEdit = false;
 
-    // Menyesuaikan label form saat tipe Guru / Siswa diubah
+    // Ubah tampilan form saat kategori Guru atau Siswa dipilih
     inputTipe.onchange = () => {
       const isGuru = inputTipe.value === "Guru";
       document.getElementById("labelNisNip").textContent = isGuru ? "NIP" : "NIS";
       document.getElementById("labelKelasMapel").textContent = isGuru ? "Mata Pelajaran (Mapel)" : "Kelas";
-      document.getElementById("inputKelas").placeholder = isGuru ? "Contoh: Pemrograman Jaringan" : "Contoh: 11 TJKT 1";
+      document.getElementById("inputKelasMapel").placeholder = isGuru ? "Contoh: Administrasi Sistem Jaringan" : "Contoh: 11 TJKT 1";
+      
+      // Jika guru, tanggal lahir dan alamat bisa disembunyikan atau opsional penuh
+      document.getElementById("grupJk").style.display = isGuru ? "block" : "block";
     };
 
-    // ---------- LANGKAH 3: AMBIL DATA ----------
     async function muatData() {
-      tampilkanPesan("Memuat data guru dan siswa...");
+      tampilkanPesan("Memuat data...");
       const { data, error } = await db
-        .from("siswa") // Menggunakan tabel yang sama, pastikan kolom pendukung tersedia atau sesuaikan tabel database Anda
+        .from("siswa")
         .select("*")
         .order("nama");
 
       if (error) {
         console.error(error);
-        tampilkanPesan("Data tidak bisa dimuat. Periksa koneksi atau tabel Supabase.", true);
+        tampilkanPesan("Gagal memuat data dari database.", true);
         return;
       }
       
-      // Jika di tabel belum ada kolom 'tipe' atau 'mapel', kita berikan nilai default agar aman
       semuaData = (data || []).map(item => ({
         ...item,
-        tipe: item.tipe || "Siswa"
+        tipe: item.tipe || "Siswa",
+        kelas: item.kelas || "",
+        mapel: item.mapel || (item.tipe === "Guru" ? item.kelas : "") // Fallback mapel jika tersimpan di kolom kelas
       }));
 
-      isiPilihanKelas();
+      isiPilihanFilter();
       tampilkanData();
     }
 
-    // ---------- LANGKAH 4: TAMPILKAN KARTU ----------
     function tampilkanData() {
       const kataKunci = elCari.value.trim().toLowerCase();
       const tipeDipilih = elFilterTipe.value;
-      const kelasDipilih = elKelas.value;
+      const kelasDipilih = elFilterKelas.value;
+      const mapelDipilih = elFilterMapel.value;
 
       const hasil = semuaData.filter((s) => {
         const cocokTipe = !tipeDipilih || s.tipe === tipeDipilih;
-        const cocokKelas = !kelasDipilih || s.kelas === kelasDipilih;
+        const cocokKelas = !kelasDipilih || (s.tipe === "Siswa" && s.kelas === kelasDipilih);
+        const cocokMapel = !mapelDipilih || (s.tipe === "Guru" && (s.mapel === mapelDipilih || s.kelas === mapelDipilih));
+        
         const cocokCari =
           !kataKunci ||
           (s.nama && s.nama.toLowerCase().includes(kataKunci)) ||
           (s.nis && s.nis.toString().toLowerCase().includes(kataKunci)) ||
-          (s.kelas && s.kelas.toLowerCase().includes(kataKunci));
-        return cocokTipe && cocokKelas && cocokCari;
+          (s.kelas && s.kelas.toLowerCase().includes(kataKunci)) ||
+          (s.mapel && s.mapel.toLowerCase().includes(kataKunci));
+
+        return cocokTipe && cocokKelas && cocokMapel && cocokCari;
       });
 
       elJumlah.textContent = hasil.length + " dari " + semuaData.length + " data ditampilkan";
       elDaftar.replaceChildren();
 
       if (hasil.length === 0) {
-        tampilkanPesan("Tidak ada data yang cocok dengan pencarian.");
+        tampilkanPesan("Tidak ada data yang cocok.");
         return;
       }
       hasil.forEach((s) => elDaftar.appendChild(buatKartu(s)));
@@ -368,7 +392,7 @@
       
       const kontainerAtas = document.createElement("div");
       const pita = el("div", "pita");
-      pita.style.backgroundColor = warnaKelas(s.kelas);
+      pita.style.backgroundColor = s.tipe === "Guru" ? "#38bdf8" : warnaKelas(s.kelas);
       kontainerAtas.appendChild(pita);
 
       const isi = el("div", "isi");
@@ -385,7 +409,6 @@
         foto.textContent = inisial(s.nama);
       }
 
-      // Klik foto untuk memperbesar
       foto.title = "Klik untuk memperbesar foto";
       foto.onclick = () => {
         if (s.foto_url) {
@@ -397,21 +420,24 @@
       isi.appendChild(foto);
       isi.appendChild(el("h2", "nama", s.nama));
       
-      const subTeks = s.tipe === "Guru" ? "Guru Mapel: " + (s.kelas || "-") : "NIS " + s.nis;
+      const subTeks = s.tipe === "Guru" ? "NIP " + s.nis : "NIS " + s.nis;
       isi.appendChild(el("p", "sub-teks", subTeks));
 
       const rincian = el("dl", "rincian");
-      tambahBaris(rincian, "Sebagai", s.tipe || "Siswa");
-      tambahBaris(rincian, s.tipe === "Guru" ? "Bidang" : "Kelas", s.kelas);
+      tambahBaris(rincian, "Sebagai", s.tipe);
+      if (s.tipe === "Guru") {
+        tambahBaris(rincian, "Mapel", s.mapel || s.kelas);
+      } else {
+        tambahBaris(rincian, "Kelas", s.kelas);
+      }
       if (s.jenis_kelamin) tambahBaris(rincian, "Jenis kelamin", s.jenis_kelamin);
-      if (s.tanggal_lahir) tambahBaris(rincian, "Tanggal lahir", formatTanggal(s.tanggal_lahir));
+      if (s.tanggal_lahir && s.tipe !== "Guru") tambahBaris(rincian, "Tanggal lahir", formatTanggal(s.tanggal_lahir));
       if (s.alamat) tambahBaris(rincian, "Alamat", s.alamat);
       
       isi.appendChild(rincian);
       kontainerAtas.appendChild(isi);
       kartu.appendChild(kontainerAtas);
 
-      // Tombol Aksi (Edit & Hapus)
       const aksiKartu = el("div", "aksi-kartu");
       const btnEdit = el("button", "", "Edit");
       btnEdit.onclick = () => bukaFormEdit(s);
@@ -450,8 +476,8 @@
     function warnaKelas(kelas) {
       if (!kelas) return "#f472b6";
       const k = kelas.toUpperCase();
-      if (k.includes("1") || k.includes("TJKT 1")) return "#f472b6";
-      if (k.includes("2") || k.includes("TJKT 2")) return "#38bdf8";
+      if (k.includes("1")) return "#f472b6";
+      if (k.includes("2")) return "#38bdf8";
       return "#a78bfa";
     }
 
@@ -466,17 +492,26 @@
       elDaftar.replaceChildren(el("p", "pesan" + (galat ? " galat" : ""), teks));
     }
 
-    function isiPilihanKelas() {
-      const daftarKelas = [...new Set(semuaData.map((s) => s.kelas).filter(Boolean))].sort();
-      elKelas.innerHTML = '<option value="">Semua kelas / mapel</option>';
+    function isiPilihanFilter() {
+      // Opsi Kelas (Siswa)
+      const daftarKelas = [...new Set(semuaData.filter(s => s.tipe === "Siswa").map(s => s.kelas).filter(Boolean))].sort();
+      elFilterKelas.innerHTML = '<option value="">Semua Kelas</option>';
       daftarKelas.forEach((k) => {
         const opsi = el("option", "", k);
         opsi.value = k;
-        elKelas.appendChild(opsi);
+        elFilterKelas.appendChild(opsi);
+      });
+
+      // Opsi Mapel (Guru)
+      const daftarMapel = [...new Set(semuaData.filter(s => s.tipe === "Guru").map(s => s.mapel || s.kelas).filter(Boolean))].sort();
+      elFilterMapel.innerHTML = '<option value="">Semua Mapel</option>';
+      daftarMapel.forEach((m) => {
+        const opsi = el("option", "", m);
+        opsi.value = m;
+        elFilterMapel.appendChild(opsi);
       });
     }
 
-    // ---------- LOGIKA CRUD ----------
     btnTambah.onclick = () => {
       statusEdit = false;
       modalJudul.textContent = "Tambah Data Guru / Siswa";
@@ -499,7 +534,7 @@
       document.getElementById("inputNisNip").value = s.nis;
       document.getElementById("inputNisNip").disabled = true;
       document.getElementById("inputNama").value = s.nama || "";
-      document.getElementById("inputKelas").value = s.kelas || "";
+      document.getElementById("inputKelasMapel").value = s.tipe === "Guru" ? (s.mapel || s.kelas) : s.kelas;
       document.getElementById("inputJk").value = s.jenis_kelamin || "Laki-laki";
       document.getElementById("inputTgl").value = s.tanggal_lahir || "";
       document.getElementById("inputAlamat").value = s.alamat || "";
@@ -510,11 +545,15 @@
     formData.onsubmit = async (e) => {
       e.preventDefault();
       const nis = document.getElementById("inputNisNip").value;
+      const tipeVal = inputTipe.value;
+      const valKelasMapel = document.getElementById("inputKelasMapel").value;
+
       const dataBaru = {
         nis: nis,
-        tipe: inputTipe.value,
+        tipe: tipeVal,
         nama: document.getElementById("inputNama").value,
-        kelas: document.getElementById("inputKelas").value,
+        kelas: tipeVal === "Siswa" ? valKelasMapel : "",
+        mapel: tipeVal === "Guru" ? valKelasMapel : "",
         jenis_kelamin: document.getElementById("inputJk").value,
         tanggal_lahir: document.getElementById("inputTgl").value || null,
         alamat: document.getElementById("inputAlamat").value || null,
@@ -544,7 +583,9 @@
 
     elCari.addEventListener("input", tampilkanData);
     elFilterTipe.addEventListener("change", tampilkanData);
-    elKelas.addEventListener("change", tampilkanData);
+    elFilterKelas.addEventListener("change", tampilkanData);
+    elFilterMapel.addEventListener("change", tampilkanData);
+    
     muatData();
   </script>
 </body>
