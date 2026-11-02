@@ -198,19 +198,19 @@
       
       <!-- Opsi 1: Guru / Siswa -->
       <select id="filterTipe" aria-label="Filter Guru atau Siswa">
-        <option value="">Semua (Guru & Siswa)</option>
+        <option value="">Guru & Siswa</option>
         <option value="Siswa">Siswa</option>
         <option value="Guru">Guru</option>
       </select>
 
       <!-- Opsi 2: Kelas -->
       <select id="filterKelas" aria-label="Filter Kelas">
-        <option value="">Semua Kelas</option>
+        <option value="">Kelas</option>
       </select>
 
       <!-- Opsi 3: Mapel -->
       <select id="filterMapel" aria-label="Filter Mapel">
-        <option value="">Semua Mapel</option>
+        <option value="">Mapel</option>
       </select>
     </div>
 
@@ -321,15 +321,11 @@
     let semuaData = [];
     let statusEdit = false;
 
-    // Ubah tampilan form saat kategori Guru atau Siswa dipilih
     inputTipe.onchange = () => {
       const isGuru = inputTipe.value === "Guru";
       document.getElementById("labelNisNip").textContent = isGuru ? "NIP" : "NIS";
       document.getElementById("labelKelasMapel").textContent = isGuru ? "Mata Pelajaran (Mapel)" : "Kelas";
       document.getElementById("inputKelasMapel").placeholder = isGuru ? "Contoh: Administrasi Sistem Jaringan" : "Contoh: 11 TJKT 1";
-      
-      // Jika guru, tanggal lahir dan alamat bisa disembunyikan atau opsional penuh
-      document.getElementById("grupJk").style.display = isGuru ? "block" : "block";
     };
 
     async function muatData() {
@@ -349,7 +345,7 @@
         ...item,
         tipe: item.tipe || "Siswa",
         kelas: item.kelas || "",
-        mapel: item.mapel || (item.tipe === "Guru" ? item.kelas : "") // Fallback mapel jika tersimpan di kolom kelas
+        mapel: item.mapel || (item.tipe === "Guru" ? item.kelas : "")
       }));
 
       isiPilihanFilter();
@@ -493,18 +489,16 @@
     }
 
     function isiPilihanFilter() {
-      // Opsi Kelas (Siswa)
       const daftarKelas = [...new Set(semuaData.filter(s => s.tipe === "Siswa").map(s => s.kelas).filter(Boolean))].sort();
-      elFilterKelas.innerHTML = '<option value="">Semua Kelas</option>';
+      elFilterKelas.innerHTML = '<option value="">Kelas</option>';
       daftarKelas.forEach((k) => {
         const opsi = el("option", "", k);
         opsi.value = k;
         elFilterKelas.appendChild(opsi);
       });
 
-      // Opsi Mapel (Guru)
       const daftarMapel = [...new Set(semuaData.filter(s => s.tipe === "Guru").map(s => s.mapel || s.kelas).filter(Boolean))].sort();
-      elFilterMapel.innerHTML = '<option value="">Semua Mapel</option>';
+      elFilterMapel.innerHTML = '<option value="">Mapel</option>';
       daftarMapel.forEach((m) => {
         const opsi = el("option", "", m);
         opsi.value = m;
@@ -590,6 +584,3 @@
   </script>
 </body>
 </html>
-
-
-
