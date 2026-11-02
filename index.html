@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Teknik Jaringan Komputer - Data Guru & Siswa</title>
+  <title>TEKNIK KOMPUTER DAN JARINGAN</title>
   <!-- Font Google -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,7 +64,7 @@
       border: 1px solid var(--garis);
       border-radius: 10px;
       padding: 10px 12px;
-      flex: 1 1 200px;
+      flex: 1 1 180px;
     }
     .kontrol input:focus-visible, .kontrol select:focus-visible {
       outline: 2px solid var(--aksen);
@@ -107,7 +107,7 @@
     }
     .foto img { width: 100%; height: 100%; object-fit: cover; }
     .nama { margin: 0; font-size: 1.1rem; font-weight: 800; }
-    .sub-teks  { margin: 0 0 12px; color: var(--teks-redup); font-size: 0.85rem; }
+    .nis  { margin: 0 0 12px; color: var(--teks-redup); font-size: 0.85rem; }
     .rincian { margin: 0 0 16px; text-align: left; font-size: 0.9rem; }
     .rincian div {
       display: flex; justify-content: space-between; gap: 12px;
@@ -134,7 +134,7 @@
     }
     .aksi-kartu button:hover { background: var(--bg); }
 
-    /* Modal Umum */
+    /* Modal Form */
     .modal {
       display: none;
       position: fixed; inset: 0;
@@ -187,7 +187,7 @@
   <div class="wadah">
     <header>
       <div>
-        <h1>Teknik Jaringan Komputer</h1>
+        <h1>TEKNIK JARINGAN KOMPUTER</h1>
         <p>Data Guru & Siswa</p>
       </div>
       <button class="btn" id="btnTambah">+ Tambah Data Guru/Siswa</button>
@@ -195,17 +195,14 @@
     
     <div class="kontrol">
       <input id="cari" type="search" placeholder="Cari nama, NIS/NIP, atau mapel..." aria-label="Cari data">
-      
       <select id="filterTipe" aria-label="Filter Guru atau Siswa">
         <option value="">Guru & Siswa</option>
         <option value="Siswa">Siswa</option>
         <option value="Guru">Guru</option>
       </select>
-
-      <select id="filterKelas" aria-label="Filter Kelas">
+      <select id="filterKelas" aria-label="Filter kelas">
         <option value="">Kelas</option>
       </select>
-
       <select id="filterMapel" aria-label="Filter Mapel">
         <option value="">Mapel</option>
       </select>
@@ -216,37 +213,33 @@
   </div>
 
   <!-- Modal Form Tambah/Edit -->
-  <div class="modal" id="modalData">
+  <div class="modal" id="modalSiswa">
     <div class="modal-konten">
-      <h2 id="modalJudul">Tambah Data Guru / Siswa</h2>
-      <form id="formData">
-        <input type="hidden" id="editIdLama">
+      <h2 id="modalJudul">Tambah Data</h2>
+      <form id="formSiswa">
+        <input type="hidden" id="editNisLama">
         
         <div class="form-grup">
           <label for="inputTipe">Kategori</label>
-          <select id="inputTipe" required>
+          <select id="inputTipe">
             <option value="Siswa">Siswa</option>
             <option value="Guru">Guru</option>
           </select>
         </div>
 
         <div class="form-grup">
-          <label for="inputNisNip" id="labelNisNip">NIS</label>
-          <input type="text" id="inputNisNip" required>
+          <label for="inputNis" id="labelNisNip">NIS</label>
+          <input type="text" id="inputNis" required>
         </div>
-
         <div class="form-grup">
           <label for="inputNama">Nama Lengkap</label>
           <input type="text" id="inputNama" required>
         </div>
-
-        <!-- Field Kelas / Mapel -->
-        <div class="form-grup" id="grupKelasMapel">
-          <label for="inputKelasMapel" id="labelKelasMapel">Kelas</label>
-          <input type="text" id="inputKelasMapel" placeholder="Contoh: 11 TJKT 1" required>
+        <div class="form-grup">
+          <label for="inputKelas" id="labelKelasMapel">Kelas</label>
+          <input type="text" id="inputKelas" placeholder="Contoh: 11 TJKT 1" required>
         </div>
 
-        <!-- Field tambahan (Hanya muncul untuk Siswa) -->
         <div class="form-grup field-siswa" id="grupJk">
           <label for="inputJk">Jenis Kelamin</label>
           <select id="inputJk">
@@ -254,12 +247,10 @@
             <option value="Perempuan">Perempuan</option>
           </select>
         </div>
-
         <div class="form-grup field-siswa" id="grupTgl">
           <label for="inputTgl">Tanggal Lahir</label>
           <input type="date" id="inputTgl">
         </div>
-
         <div class="form-grup field-siswa" id="grupAlamat">
           <label for="inputAlamat">Alamat</label>
           <textarea id="inputAlamat" rows="2"></textarea>
@@ -269,7 +260,6 @@
           <label for="inputFoto">URL Foto (Opsional)</label>
           <input type="url" id="inputFoto" placeholder="https://...">
         </div>
-
         <div class="modal-aksi">
           <button type="button" class="btn btn-sekunder" id="btnBatal">Batal</button>
           <button type="submit" class="btn" id="btnSimpan">Simpan</button>
@@ -290,9 +280,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
   <script>
+    // ---------- LANGKAH 1: PENGATURAN ----------
     const SUPABASE_URL = "https://tchfltkkliadtobzcvhb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_qsphmMKg2RStlOeNKL2ztw_Ize_T-3r";
 
+    // ---------- LANGKAH 2: HUBUNGKAN KE SUPABASE ----------
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const elDaftar = document.getElementById("daftar");
@@ -302,9 +294,9 @@
     const elFilterKelas = document.getElementById("filterKelas");
     const elFilterMapel = document.getElementById("filterMapel");
     
-    const modalData = document.getElementById("modalData");
+    const modalSiswa = document.getElementById("modalSiswa");
     const modalJudul = document.getElementById("modalJudul");
-    const formData = document.getElementById("formData");
+    const formSiswa = document.getElementById("formSiswa");
     const btnTambah = document.getElementById("btnTambah");
     const btnBatal = document.getElementById("btnBatal");
     const inputTipe = document.getElementById("inputTipe");
@@ -319,11 +311,12 @@
     let semuaData = [];
     let statusEdit = false;
 
+    // Mengubah label form otomatis saat kategori diganti Guru / Siswa
     inputTipe.onchange = () => {
       const isGuru = inputTipe.value === "Guru";
       document.getElementById("labelNisNip").textContent = isGuru ? "NIP" : "NIS";
       document.getElementById("labelKelasMapel").textContent = isGuru ? "Mata Pelajaran (Mapel)" : "Kelas";
-      document.getElementById("inputKelasMapel").placeholder = isGuru ? "Contoh: Administrasi Sistem Jaringan" : "Contoh: 11 TJKT 1";
+      document.getElementById("inputKelas").placeholder = isGuru ? "Contoh: Produktif TKJ" : "Contoh: 11 TJKT 1";
       
       const fieldSiswa = document.querySelectorAll(".field-siswa");
       fieldSiswa.forEach(el => {
@@ -331,30 +324,35 @@
       });
     };
 
+    // ---------- LANGKAH 3: AMBIL DATA ----------
     async function muatData() {
       tampilkanPesan("Memuat data...");
       const { data, error } = await db
         .from("siswa")
-        .select("*")
+        .select("nis, nama, kelas, jenis_kelamin, tanggal_lahir, alamat, foto_url")
         .order("nama");
 
       if (error) {
         console.error(error);
-        tampilkanPesan("Gagal memuat data dari database.", true);
+        tampilkanPesan("Data tidak bisa dimuat. Periksa koneksi Supabase.", true);
         return;
       }
-      
-      semuaData = (data || []).map(item => ({
-        ...item,
-        tipe: item.tipe || "Siswa",
-        kelas: item.kelas || "",
-        mapel: item.tipe === "Guru" ? (item.mapel || item.kelas) : ""
-      }));
+
+      // Deteksi Guru vs Siswa berdasarkan ada/tidaknya tanggal lahir
+      semuaData = (data || []).map(item => {
+        const isGuru = !item.tanggal_lahir;
+        return {
+          ...item,
+          tipe: isGuru ? "Guru" : "Siswa",
+          mapel: isGuru ? item.kelas : ""
+        };
+      });
 
       isiPilihanFilter();
       tampilkanData();
     }
 
+    // ---------- LANGKAH 4: TAMPILKAN KARTU & FILTER ----------
     function tampilkanData() {
       const kataKunci = elCari.value.trim().toLowerCase();
       const tipeDipilih = elFilterTipe.value;
@@ -408,6 +406,7 @@
         foto.textContent = inisial(s.nama);
       }
 
+      // Klik foto untuk memperbesar
       foto.title = "Klik untuk memperbesar foto";
       foto.onclick = () => {
         if (s.foto_url) {
@@ -418,9 +417,7 @@
 
       isi.appendChild(foto);
       isi.appendChild(el("h2", "nama", s.nama));
-      
-      const subTeks = s.tipe === "Guru" ? "NIP " + s.nis : "NIS " + s.nis;
-      isi.appendChild(el("p", "sub-teks", subTeks));
+      isi.appendChild(el("p", "nis", (s.tipe === "Guru" ? "NIP " : "NIS ") + s.nis));
 
       const rincian = el("dl", "rincian");
       tambahBaris(rincian, "Sebagai", s.tipe);
@@ -437,6 +434,7 @@
       kontainerAtas.appendChild(isi);
       kartu.appendChild(kontainerAtas);
 
+      // Tombol Aksi (Edit & Hapus)
       const aksiKartu = el("div", "aksi-kartu");
       const btnEdit = el("button", "", "Edit");
       btnEdit.onclick = () => bukaFormEdit(s);
@@ -509,47 +507,47 @@
       });
     }
 
+    // ---------- LANGKAH 5: LOGIKA CRUD (TAMBAH, EDIT, HAPUS) ----------
     btnTambah.onclick = () => {
       statusEdit = false;
       modalJudul.textContent = "Tambah Data Guru / Siswa";
-      formData.reset();
-      document.getElementById("editIdLama").value = "";
-      document.getElementById("inputNisNip").disabled = false;
+      formSiswa.reset();
+      document.getElementById("editNisLama").value = "";
+      document.getElementById("inputNis").disabled = false;
       inputTipe.value = "Siswa";
       inputTipe.onchange();
-      modalData.classList.add("aktif");
+      modalSiswa.classList.add("aktif");
     };
 
-    btnBatal.onclick = () => modalData.classList.remove("aktif");
+    btnBatal.onclick = () => modalSiswa.classList.remove("aktif");
 
     function bukaFormEdit(s) {
       statusEdit = true;
       modalJudul.textContent = "Edit Data";
-      document.getElementById("editIdLama").value = s.nis;
+      document.getElementById("editNisLama").value = s.nis;
       inputTipe.value = s.tipe || "Siswa";
       inputTipe.onchange();
-      document.getElementById("inputNisNip").value = s.nis;
-      document.getElementById("inputNisNip").disabled = true;
+      document.getElementById("inputNis").value = s.nis;
+      document.getElementById("inputNis").disabled = true;
       document.getElementById("inputNama").value = s.nama || "";
-      document.getElementById("inputKelasMapel").value = s.tipe === "Guru" ? (s.mapel || s.kelas) : s.kelas;
+      document.getElementById("inputKelas").value = s.tipe === "Guru" ? (s.mapel || s.kelas) : s.kelas;
       document.getElementById("inputJk").value = s.jenis_kelamin || "Laki-laki";
       document.getElementById("inputTgl").value = s.tanggal_lahir || "";
       document.getElementById("inputAlamat").value = s.alamat || "";
       document.getElementById("inputFoto").value = s.foto_url || "";
-      modalData.classList.add("aktif");
+      modalSiswa.classList.add("aktif");
     }
 
-    formData.onsubmit = async (e) => {
+    formSiswa.onsubmit = async (e) => {
       e.preventDefault();
-      const nis = document.getElementById("inputNisNip").value;
+      const nis = document.getElementById("inputNis").value;
       const tipeVal = inputTipe.value;
-      const valKelasMapel = document.getElementById("inputKelasMapel").value;
+      const valKelasMapel = document.getElementById("inputKelas").value;
 
       const dataBaru = {
         nis: nis,
-        tipe: tipeVal,
         nama: document.getElementById("inputNama").value,
-        kelas: valKelasMapel, // Data mapel guru otomatis masuk ke kolom kelas tanpa bikin error cache database
+        kelas: valKelasMapel,
         jenis_kelamin: tipeVal === "Siswa" ? document.getElementById("inputJk").value : null,
         tanggal_lahir: tipeVal === "Siswa" ? (document.getElementById("inputTgl").value || null) : null,
         alamat: tipeVal === "Siswa" ? (document.getElementById("inputAlamat").value || null) : null,
@@ -557,7 +555,7 @@
       };
 
       if (statusEdit) {
-        const nisLama = document.getElementById("editIdLama").value;
+        const nisLama = document.getElementById("editNisLama").value;
         const { error } = await db.from("siswa").update(dataBaru).eq("nis", nisLama);
         if (error) { alert("Gagal memperbarui data: " + error.message); return; }
       } else {
@@ -565,7 +563,7 @@
         if (error) { alert("Gagal menambah data: " + error.message); return; }
       }
 
-      modalData.classList.remove("aktif");
+      modalSiswa.classList.remove("aktif");
       muatData();
     };
 
