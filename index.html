@@ -196,19 +196,16 @@
     <div class="kontrol">
       <input id="cari" type="search" placeholder="Cari nama, NIS/NIP, atau mapel..." aria-label="Cari data">
       
-      <!-- Opsi 1: Guru / Siswa -->
       <select id="filterTipe" aria-label="Filter Guru atau Siswa">
         <option value="">Guru & Siswa</option>
         <option value="Siswa">Siswa</option>
         <option value="Guru">Guru</option>
       </select>
 
-      <!-- Opsi 2: Kelas -->
       <select id="filterKelas" aria-label="Filter Kelas">
         <option value="">Kelas</option>
       </select>
 
-      <!-- Opsi 3: Mapel -->
       <select id="filterMapel" aria-label="Filter Mapel">
         <option value="">Mapel</option>
       </select>
@@ -243,13 +240,14 @@
           <input type="text" id="inputNama" required>
         </div>
 
-        <!-- Field dinamis untuk Kelas (Siswa) atau Mapel (Guru) -->
+        <!-- Field Kelas / Mapel -->
         <div class="form-grup" id="grupKelasMapel">
           <label for="inputKelasMapel" id="labelKelasMapel">Kelas</label>
           <input type="text" id="inputKelasMapel" placeholder="Contoh: 11 TJKT 1" required>
         </div>
 
-        <div class="form-grup" id="grupJk">
+        <!-- Field tambahan (Hanya muncul untuk Siswa) -->
+        <div class="form-grup field-siswa" id="grupJk">
           <label for="inputJk">Jenis Kelamin</label>
           <select id="inputJk">
             <option value="Laki-laki">Laki-laki</option>
@@ -257,12 +255,12 @@
           </select>
         </div>
 
-        <div class="form-grup" id="grupTgl">
+        <div class="form-grup field-siswa" id="grupTgl">
           <label for="inputTgl">Tanggal Lahir</label>
           <input type="date" id="inputTgl">
         </div>
 
-        <div class="form-grup" id="grupAlamat">
+        <div class="form-grup field-siswa" id="grupAlamat">
           <label for="inputAlamat">Alamat</label>
           <textarea id="inputAlamat" rows="2"></textarea>
         </div>
@@ -321,11 +319,18 @@
     let semuaData = [];
     let statusEdit = false;
 
+    // Mengatur field form agar otomatis menyembunyikan opsi siswa jika yang dipilih Guru
     inputTipe.onchange = () => {
       const isGuru = inputTipe.value === "Guru";
       document.getElementById("labelNisNip").textContent = isGuru ? "NIP" : "NIS";
       document.getElementById("labelKelasMapel").textContent = isGuru ? "Mata Pelajaran (Mapel)" : "Kelas";
       document.getElementById("inputKelasMapel").placeholder = isGuru ? "Contoh: Administrasi Sistem Jaringan" : "Contoh: 11 TJKT 1";
+      
+      // Sembunyikan Jenis Kelamin, Tanggal Lahir, dan Alamat jika Guru
+      const fieldSiswa = document.querySelectorAll(".field-siswa");
+      fieldSiswa.forEach(el => {
+        el.style.display = isGuru ? "none" : "block";
+      });
     };
 
     async function muatData() {
@@ -425,10 +430,10 @@
         tambahBaris(rincian, "Mapel", s.mapel || s.kelas);
       } else {
         tambahBaris(rincian, "Kelas", s.kelas);
+        if (s.jenis_kelamin) tambahBaris(rincian, "Jenis kelamin", s.jenis_kelamin);
+        if (s.tanggal_lahir) tambahBaris(rincian, "Tanggal lahir", formatTanggal(s.tanggal_lahir));
+        if (s.alamat) tambahBaris(rincian, "Alamat", s.alamat);
       }
-      if (s.jenis_kelamin) tambahBaris(rincian, "Jenis kelamin", s.jenis_kelamin);
-      if (s.tanggal_lahir && s.tipe !== "Guru") tambahBaris(rincian, "Tanggal lahir", formatTanggal(s.tanggal_lahir));
-      if (s.alamat) tambahBaris(rincian, "Alamat", s.alamat);
       
       isi.appendChild(rincian);
       kontainerAtas.appendChild(isi);
@@ -548,9 +553,9 @@
         nama: document.getElementById("inputNama").value,
         kelas: tipeVal === "Siswa" ? valKelasMapel : "",
         mapel: tipeVal === "Guru" ? valKelasMapel : "",
-        jenis_kelamin: document.getElementById("inputJk").value,
-        tanggal_lahir: document.getElementById("inputTgl").value || null,
-        alamat: document.getElementById("inputAlamat").value || null,
+        jenis_kelamin: tipeVal === "Siswa" ? document.getElementById("inputJk").value : null,
+        tanggal_lahir: tipeVal === "Siswa" ? (document.getElementById("inputTgl").value || null) : null,
+        alamat: tipeVal === "Siswa" ? (document.getElementById("inputAlamat").value || null) : null,
         foto_url: document.getElementById("inputFoto").value || null
       };
 
