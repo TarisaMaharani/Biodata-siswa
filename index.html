@@ -319,14 +319,12 @@
     let semuaData = [];
     let statusEdit = false;
 
-    // Mengatur field form agar otomatis menyembunyikan opsi siswa jika yang dipilih Guru
     inputTipe.onchange = () => {
       const isGuru = inputTipe.value === "Guru";
       document.getElementById("labelNisNip").textContent = isGuru ? "NIP" : "NIS";
       document.getElementById("labelKelasMapel").textContent = isGuru ? "Mata Pelajaran (Mapel)" : "Kelas";
       document.getElementById("inputKelasMapel").placeholder = isGuru ? "Contoh: Administrasi Sistem Jaringan" : "Contoh: 11 TJKT 1";
       
-      // Sembunyikan Jenis Kelamin, Tanggal Lahir, dan Alamat jika Guru
       const fieldSiswa = document.querySelectorAll(".field-siswa");
       fieldSiswa.forEach(el => {
         el.style.display = isGuru ? "none" : "block";
@@ -350,7 +348,7 @@
         ...item,
         tipe: item.tipe || "Siswa",
         kelas: item.kelas || "",
-        mapel: item.mapel || (item.tipe === "Guru" ? item.kelas : "")
+        mapel: item.tipe === "Guru" ? (item.mapel || item.kelas) : ""
       }));
 
       isiPilihanFilter();
@@ -551,8 +549,7 @@
         nis: nis,
         tipe: tipeVal,
         nama: document.getElementById("inputNama").value,
-        kelas: tipeVal === "Siswa" ? valKelasMapel : "",
-        mapel: tipeVal === "Guru" ? valKelasMapel : "",
+        kelas: valKelasMapel, // Data mapel guru otomatis masuk ke kolom kelas tanpa bikin error cache database
         jenis_kelamin: tipeVal === "Siswa" ? document.getElementById("inputJk").value : null,
         tanggal_lahir: tipeVal === "Siswa" ? (document.getElementById("inputTgl").value || null) : null,
         alamat: tipeVal === "Siswa" ? (document.getElementById("inputAlamat").value || null) : null,
