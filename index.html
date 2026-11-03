@@ -467,14 +467,15 @@
         .map((k) => k[0].toUpperCase()).join("");
     }
 
-    // Fungsi warna kartu sesuai permintaan
+    // Fungsi warna kartu sesuai permintaan (Guru Ungu, TJKT 2 Biru, Sisanya Pink)
     function warnaKelas(s) {
       if (s.tipe === "Guru") return "#c084fc"; // Ungu untuk Guru
       if (!s.kelas) return "#f472b6";
-      const k = s.kelas.toUpperCase();
-      if (k.includes("1")) return "#f472b6"; // Pink untuk TJKT 1
-      if (k.includes("2")) return "#38bdf8"; // Biru untuk TJKT 2
-      return "#a78bfa";
+      
+      const kelasStr = String(s.kelas);
+      if (kelasStr.includes("2")) return "#38bdf8"; // Biru untuk TJKT 2
+      
+      return "#f472b6"; // Pink untuk TJKT 1 / lainnya
     }
 
     function formatTanggal(teks) {
@@ -583,4 +584,3 @@
   </script>
 </body>
 </html>
-
