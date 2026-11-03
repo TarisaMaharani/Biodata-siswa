@@ -311,7 +311,6 @@
     let semuaData = [];
     let statusEdit = false;
 
-    // Mengubah label form otomatis saat kategori diganti Guru / Siswa
     inputTipe.onchange = () => {
       const isGuru = inputTipe.value === "Guru";
       document.getElementById("labelNisNip").textContent = isGuru ? "NIP" : "NIS";
@@ -338,7 +337,6 @@
         return;
       }
 
-      // Deteksi Guru vs Siswa berdasarkan ada/tidaknya tanggal lahir
       semuaData = (data || []).map(item => {
         const isGuru = !item.tanggal_lahir;
         return {
@@ -389,7 +387,8 @@
       
       const kontainerAtas = document.createElement("div");
       const pita = el("div", "pita");
-      pita.style.backgroundColor = s.tipe === "Guru" ? "#38bdf8" : warnaKelas(s.kelas);
+      // Mengatur warna pita: Guru Ungu, TJKT 1 Pink, TJKT 2 Biru
+      pita.style.backgroundColor = warnaKelas(s);
       kontainerAtas.appendChild(pita);
 
       const isi = el("div", "isi");
@@ -406,7 +405,6 @@
         foto.textContent = inisial(s.nama);
       }
 
-      // Klik foto untuk memperbesar
       foto.title = "Klik untuk memperbesar foto";
       foto.onclick = () => {
         if (s.foto_url) {
@@ -434,7 +432,6 @@
       kontainerAtas.appendChild(isi);
       kartu.appendChild(kontainerAtas);
 
-      // Tombol Aksi (Edit & Hapus)
       const aksiKartu = el("div", "aksi-kartu");
       const btnEdit = el("button", "", "Edit");
       btnEdit.onclick = () => bukaFormEdit(s);
@@ -470,11 +467,13 @@
         .map((k) => k[0].toUpperCase()).join("");
     }
 
-    function warnaKelas(kelas) {
-      if (!kelas) return "#f472b6";
-      const k = kelas.toUpperCase();
-      if (k.includes("1")) return "#f472b6";
-      if (k.includes("2")) return "#38bdf8";
+    // Fungsi warna kartu sesuai permintaan
+    function warnaKelas(s) {
+      if (s.tipe === "Guru") return "#c084fc"; // Ungu untuk Guru
+      if (!s.kelas) return "#f472b6";
+      const k = s.kelas.toUpperCase();
+      if (k.includes("1")) return "#f472b6"; // Pink untuk TJKT 1
+      if (k.includes("2")) return "#38bdf8"; // Biru untuk TJKT 2
       return "#a78bfa";
     }
 
@@ -507,10 +506,10 @@
       });
     }
 
-    // ---------- LANGKAH 5: LOGIKA CRUD (TAMBAH, EDIT, HAPUS) ----------
+    // ---------- LANGKAH 5: LOGIKA CRUD ----------
     btnTambah.onclick = () => {
       statusEdit = false;
-      modalJudul.textContent = "Tambah Data Guru / Siswa";
+      modalJudul.textContent = "Tambah Data";
       formSiswa.reset();
       document.getElementById("editNisLama").value = "";
       document.getElementById("inputNis").disabled = false;
@@ -584,3 +583,4 @@
   </script>
 </body>
 </html>
+
